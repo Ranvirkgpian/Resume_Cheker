@@ -85,7 +85,7 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                 m1, m2, m3 = st.columns(3)
                 m1.metric("Overall Score", f"{result.scores.overall_score}/100")
                 
-                tier_color = "green" if result.tier == "A" else ("orange" if result.tier == "B" else "red")
+                tier_color = "green" if result.tier.value == "A" else ("orange" if result.tier.value == "B" else "red")
                 m2.markdown(f"**Tier:** <span style='color:{tier_color};font-size:1.5em'>{result.tier.value}</span>", unsafe_allow_html=True)
                 tier_desc = TIER_DESCRIPTIONS.get(result.tier.value, "")
                 m2.markdown(f"<span style='color:gray;font-size:0.9em'>{tier_desc}</span>", unsafe_allow_html=True)

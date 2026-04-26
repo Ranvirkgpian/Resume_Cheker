@@ -32,7 +32,7 @@ class MockLLMClient(BaseLLMClient):
                     score=overall + 5,
                     explanation=sim_explanation,
                     suggestions=[
-                        "Highlight transferable skills more explicitly",
+                        "Strengthen or explicitly highlight usage of related skills",
                         "Use terminology that matches the job description exactly"
                     ],
                     matched_keywords=["Related Domain Concept (Medium)"],
