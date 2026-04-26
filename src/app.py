@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import os
 from dotenv import load_dotenv
 
@@ -7,6 +8,7 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
+from src.core.models import TIER_DESCRIPTIONS
 from src.core.engine import EvaluationEngine
 from src.llm.mock_client import MockLLMClient
 from src.llm.openai_client import OpenAIClient
@@ -95,11 +97,54 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                 
                 tier_color = "green" if result.tier == "A" else ("orange" if result.tier == "B" else "red")
                 m2.markdown(f"**Tier:** <span style='color:{tier_color};font-size:1.5em'>{result.tier.value}</span>", unsafe_allow_html=True)
+                tier_desc = TIER_DESCRIPTIONS.get(result.tier.value, "")
+                m2.markdown(f"<span style='color:gray;font-size:0.9em'>{tier_desc}</span>", unsafe_allow_html=True)
                 
                 # Summary
                 st.subheader("Summary")
                 st.info(result.summary)
                 
+                # Section-wise Scores
+                st.subheader("Section-wise Scores")
+                for sec in result.section_scores:
+                    st.markdown(f"**{sec.section}**")
+                    sec_col1, sec_col2 = st.columns([8, 2])
+                    with sec_col1:
+                        st.progress(sec.score / 100)
+                    with sec_col2:
+                        st.markdown(f"**{sec.score}**")
+                    st.caption(sec.explanation)
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                # JD vs Resume Gap Analysis
+                st.subheader("JD vs Resume Gap Analysis")
+                if result.requirement_matches:
+                    data = []
+                    for req in result.requirement_matches:
+                        status = "✅ Matched" if req.match_percent >= 80 else ("⚠️ Partial" if req.match_percent >= 40 else "❌ Missing")
+                        data.append({
+                            "Requirement": req.requirement,
+                            "Match %": req.match_percent,
+                            "Status": status,
+                            "Evidence": req.evidence
+                        })
+                    df = pd.DataFrame(data)
+                    st.dataframe(
+                        df,
+                        column_config={
+                            "Match %": st.column_config.ProgressColumn(
+                                "Match %",
+                                help="Percentage match for this requirement",
+                                format="%f%%",
+                                min_value=0,
+                                max_value=100,
+                            ),
+                        },
+                        hide_index=True,
+                        use_container_width=True
+                    )
+                st.markdown("<br>", unsafe_allow_html=True)
+
                 # Detailed scores
                 st.subheader("Detailed Scoring")
                 
@@ -107,6 +152,17 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
                     st.markdown(f"**{title}:** {dimension.score}/100")
                     st.caption(f"Reasoning: {dimension.explanation}")
                     st.progress(dimension.score / 100)
+
+                    with st.expander("▶ View Details"):
+                        if dimension.matched_keywords:
+                            st.markdown(f"**Matched Skills:** <span style='color:green'>{', '.join(dimension.matched_keywords)}</span>", unsafe_allow_html=True)
+                        if dimension.missing_keywords:
+                            st.markdown(f"**Missing Skills:** <span style='color:red'>{', '.join(dimension.missing_keywords)}</span>", unsafe_allow_html=True)
+                        if dimension.suggestions:
+                            st.markdown("**Suggestions:**")
+                            for sug in dimension.suggestions:
+                                st.markdown(f"- {sug}")
+
                     st.markdown("<br>", unsafe_allow_html=True)
 
                 c1, c2 = st.columns(2)
