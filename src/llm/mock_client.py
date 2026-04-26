@@ -6,16 +6,15 @@ from src.core.models import (
 
 class MockLLMClient(BaseLLMClient):
     def evaluate_candidate(self, candidate: CandidateProfile, jd: JobDescription) -> EvaluationResult:
-        """Returns a deterministic mock evaluation result with all enhanced fields."""
+        """Returns a deterministic, domain-agnostic mock evaluation result."""
         
-        # Simple logic to change mock response based on JD content for demonstration
         is_python = "python" in jd.raw_text.lower()
         is_kafka = "kafka" in jd.raw_text.lower()
         
         overall = 85 if is_python else 60
         tier = TierClassification.TIER_A if overall >= 80 else (TierClassification.TIER_B if overall >= 60 else TierClassification.TIER_C)
         
-        sim_explanation = "Candidate has strong AWS Kinesis background which translates well to Kafka." if is_kafka else "Basic semantic overlap."
+        sim_explanation = "Candidate has strong AWS Kinesis background which translates well to Kafka." if is_kafka else "Candidate has strong background in related tools which translate well to the required stack."
 
         return EvaluationResult(
             scores=EvaluationScores(
@@ -23,100 +22,87 @@ class MockLLMClient(BaseLLMClient):
                     score=overall, 
                     explanation="Matched several core requirements from the JD.",
                     suggestions=[
-                        "Add specific version numbers for technologies (e.g., Python 3.11, Django 4.2)",
-                        "Include certification names relevant to the JD (e.g., AWS Certified Developer)"
+                        "Add specific version numbers or standards for mentioned skills",
+                        "Include certification names relevant to the JD"
                     ],
-                    matched_keywords=["Python", "REST APIs", "SQL", "Git"],
-                    missing_keywords=["Docker", "Kubernetes", "CI/CD"]
+                    matched_keywords=["Core Skill 1", "Core Skill 2"],
+                    missing_keywords=["Missing Tool A", "Missing Framework B"]
                 ),
                 similarity_match=ScoreDimension(
-                    score=overall + 5 if overall < 95 else 95,
+                    score=overall + 5,
                     explanation=sim_explanation,
                     suggestions=[
-                        "Highlight transferable skills more explicitly (e.g., 'AWS Kinesis experience directly applicable to Kafka streaming')",
-                        "Use industry-standard terminology that ATS systems recognize"
+                        "Highlight transferable skills more explicitly",
+                        "Use terminology that matches the job description exactly"
                     ],
-                    matched_keywords=["Cloud Services", "Streaming", "Microservices"],
-                    missing_keywords=["Kafka", "Event-Driven Architecture"]
+                    matched_keywords=["Related Domain Concept"],
+                    missing_keywords=["Specific Required Concept"]
                 ),
                 impact_achievement=ScoreDimension(
                     score=80,
-                    explanation="Candidate demonstrated clear metrics in their last role.",
+                    explanation="Candidate demonstrated clear outcomes in their last role.",
                     suggestions=[
                         "Add metrics (e.g., 'reduced cost by 15%', 'improved efficiency by 20%')",
-                        "Use action verbs like 'optimized', 'designed', 'led', 'architected'",
+                        "Use action verbs like 'optimized', 'designed', 'led'",
                         "Quantify team size and project scope where possible"
                     ],
-                    matched_keywords=["Led team", "Reduced latency", "Improved throughput"],
-                    missing_keywords=["Revenue impact", "Cost savings", "Scale metrics"]
+                    matched_keywords=["Led project", "Improved process"],
+                    missing_keywords=["Specific revenue impact", "Scale metrics"]
                 ),
                 ownership=ScoreDimension(
                     score=75,
-                    explanation="Led a small team, showing good ownership but limited large-scale autonomy.",
+                    explanation="Demonstrated good ownership but limited large-scale autonomy.",
                     suggestions=[
-                        "Emphasize end-to-end project ownership (design → deploy → monitor)",
-                        "Mention decisions you made independently and their outcomes",
-                        "Highlight mentoring or cross-team collaboration"
+                        "Emphasize end-to-end project ownership",
+                        "Mention decisions you made independently and their outcomes"
                     ],
-                    matched_keywords=["Team lead", "Project owner"],
-                    missing_keywords=["System design", "Technical strategy", "Stakeholder management"]
+                    matched_keywords=["Task owner", "Coordinator"],
+                    missing_keywords=["Strategic design", "Stakeholder management"]
                 ),
                 overall_score=overall
             ),
             tier=tier,
-            summary="Mock Evaluation: This is a solid candidate with relevant background, generated via MockClient. The candidate shows strong technical skills with room for improvement in quantifying impact and demonstrating broader ownership.",
+            summary="Mock Evaluation: This is a solid candidate with relevant background, generated via MockClient. Shows strong core skills but needs to tailor the resume closer to the JD's specific tooling.",
             section_scores=[
                 SectionScore(
                     section="Education",
                     score=85,
-                    explanation="Relevant degree in Computer Science from a recognized institution."
+                    explanation="Relevant educational background for the role."
                 ),
                 SectionScore(
                     section="Experience",
                     score=72,
-                    explanation="3+ years of relevant experience but roles could better highlight leadership and scale."
+                    explanation="Relevant experience but roles could better highlight specific tools from the JD."
                 ),
                 SectionScore(
                     section="Projects",
                     score=78,
-                    explanation="Personal projects show initiative but lack production-scale complexity."
+                    explanation="Projects show initiative but lack the specific stack required."
                 ),
                 SectionScore(
                     section="Skills",
                     score=88,
-                    explanation="Strong technical skills section covering most JD requirements."
+                    explanation="Strong skills section covering most generic requirements."
                 ),
             ],
             requirement_matches=[
                 RequirementMatch(
-                    requirement="3+ years Python development experience",
+                    requirement="Primary Domain Requirement",
                     matched=True,
                     match_percent=90,
-                    evidence="Resume mentions 4 years of Python experience across 2 roles."
+                    evidence="Resume mentions significant experience in this area."
                 ),
                 RequirementMatch(
-                    requirement="Experience with Kafka or similar streaming platforms",
+                    requirement="Secondary Tooling / Software",
                     matched=True,
                     match_percent=70,
-                    evidence="Used AWS Kinesis extensively (semantically similar to Kafka)."
+                    evidence="Used related tools extensively."
                 ),
                 RequirementMatch(
-                    requirement="Docker & Kubernetes experience",
+                    requirement="Specific Framework / Standard",
                     matched=False,
                     match_percent=10,
-                    evidence="No mention of containerization or orchestration tools."
-                ),
-                RequirementMatch(
-                    requirement="CI/CD pipeline experience",
-                    matched=False,
-                    match_percent=20,
-                    evidence="Mentions 'Git' but no CI/CD tooling (Jenkins, GitHub Actions, etc.)."
-                ),
-                RequirementMatch(
-                    requirement="REST API design and development",
-                    matched=True,
-                    match_percent=95,
-                    evidence="Built and maintained multiple REST APIs using Flask and FastAPI."
-                ),
+                    evidence="No explicit mention in the text."
+                )
             ]
         )
