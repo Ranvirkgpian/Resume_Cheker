@@ -12,7 +12,7 @@ class GroqClient(BaseLLMClient):
         self.model = "llama-3.3-70b-versatile"
 
     def evaluate_candidate(self, candidate: CandidateProfile, jd: JobDescription) -> EvaluationResult:
-                prompt = f"""
+        prompt = f"""
 You are an expert, domain-agnostic recruiter. Evaluate the candidate resume STRICTLY against the provided Job Description (JD). Do NOT use any external or default skill lists.
 
 CRITICAL RULES:
