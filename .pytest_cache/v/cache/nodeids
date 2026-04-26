@@ -1,0 +1,8 @@
+[
+  "tests/test_engine.py::test_evaluation_engine_poor_fit",
+  "tests/test_engine.py::test_evaluation_engine_with_mock",
+  "tests/test_engine.py::test_evaluation_has_keywords",
+  "tests/test_engine.py::test_evaluation_has_requirement_matches",
+  "tests/test_engine.py::test_evaluation_has_section_scores",
+  "tests/test_engine.py::test_evaluation_has_suggestions"
+]
