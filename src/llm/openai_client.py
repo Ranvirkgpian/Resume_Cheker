@@ -9,32 +9,41 @@ class OpenAIClient(BaseLLMClient):
         self.model = "gpt-4o-2024-08-06"
 
     def evaluate_candidate(self, candidate: CandidateProfile, jd: JobDescription) -> EvaluationResult:
-        prompt = f"""
-You are an expert technical recruiter and engineering manager. Evaluate the following candidate resume against the provided Job Description.
+                prompt = f"""
+You are an expert, domain-agnostic recruiter. Evaluate the candidate resume STRICTLY against the provided Job Description (JD). Do NOT use any external or default skill lists.
 
-Analyze the profile across these 4 dimensions:
-1. Exact Match: Direct keyword or requirement matches.
-2. Similarity Match: Semantic equivalency (e.g., matching AWS Kinesis to Kafka experience). Be smart about transferable skills.
-3. Impact/Achievement: Assessing the depth and scale of achievements (e.g., metrics, business impact).
-4. Ownership: Evaluating the candidate's level of responsibility and autonomy.
+CRITICAL RULES:
+1. Dynamic Parsing: Extract Required Skills, Preferred Skills, Responsibilities, and Tools directly from the JD.
+2. Strict Context: Compare the resume ONLY against the extracted JD skills.
+   - Matched Skills: MUST be present in both JD and Resume.
+   - Missing Skills: MUST be present in JD but absent in Resume.
+   - NEVER introduce skills or tools not explicitly mentioned in the JD or logically derived from the JD domain. No cross-domain hallucinations (e.g., do not suggest Kafka for a Civil Engineering role).
+3. Role-Sensitivity:
+   - If the JD is for an Internship/Fresher: focus Impact on "Project Outcomes" and "Learning Impact", and Ownership on "initiative/contribution".
+   - If Experienced: focus Impact on "Business Impact" (ROI, revenue, efficiency), and Ownership on "leadership/autonomy".
+4. Intelligent Suggestions: Generate actionable suggestions purely based on JD gaps. E.g., if a JD tool is missing, suggest adding a project using that tool. Do not give generic suggestions.
+
+Analyze across 4 dimensions:
+1. Exact Match: Direct keyword/requirement matches from the JD.
+2. Similarity Match: Semantic equivalency within the SAME domain (e.g., AWS Kinesis to Kafka if tech, or STAAD to SAP2000 if civil).
+3. Impact/Achievement: Scale of achievements adapted to role level.
+4. Ownership: Level of responsibility adapted to role level.
 
 For EACH dimension, provide:
 - A score (0-100)
 - A concise explanation
-- A list of actionable improvement suggestions (how the candidate can improve their resume for this dimension)
-- A list of matched keywords/skills found in the resume
-- A list of missing keywords/skills NOT found in the resume but required by the JD
+- A list of actionable improvement suggestions
+- A list of matched keywords/skills (JD vs Resume)
+- A list of missing keywords/skills (JD vs Resume)
 
-Then provide an overall score (0-100) and classify them into a Tier:
-- "A" (Strong Shortlist — Fast-track to interview)
-- "B" (Needs Improvement — Likely shortlist with gaps)
-- "C" (Low Match — Significant gaps)
+Provide an overall score (0-100) and classify them into a Tier:
+- "A" (Strong match: 85-100)
+- "B" (Moderate match: 70-84)
+- "C" (Weak match: <70)
 
 Also provide:
-- section_scores: Score each resume SECTION individually (Education, Experience, Projects, Skills). For each provide a score (0-100) and a brief explanation.
-- requirement_matches: For each key requirement from the JD, indicate whether it was matched in the resume, provide a match_percent (0-100), and cite evidence from the resume.
-
-Finally, provide a brief summary of their fit.
+- section_scores: Score each resume SECTION individually (Education, Experience, Projects, Skills) based on relevance to JD. Provide a score (0-100) and brief explanation.
+- requirement_matches: For each key requirement extracted from the JD, indicate whether it was matched, provide a match_percent (0-100), and cite evidence from the resume.
 
 Output purely as a JSON object matching this schema exactly:
 {{
