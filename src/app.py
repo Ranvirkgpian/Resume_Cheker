@@ -11,7 +11,6 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.core.models import TIER_DESCRIPTIONS
 from src.core.engine import EvaluationEngine
 from src.llm.mock_client import MockLLMClient
-from src.llm.openai_client import OpenAIClient
 from src.llm.groq_client import GroqClient
 from src.utils.parser import extract_text_from_pdf
 

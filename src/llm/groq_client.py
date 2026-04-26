@@ -12,32 +12,39 @@ class GroqClient(BaseLLMClient):
         self.model = "llama-3.3-70b-versatile"
 
     def evaluate_candidate(self, candidate: CandidateProfile, jd: JobDescription) -> EvaluationResult:
-                prompt = f"""
+        prompt = f"""
 You are an expert, domain-agnostic recruiter. Evaluate the candidate resume STRICTLY against the provided Job Description (JD). Do NOT use any external or default skill lists.
 
 CRITICAL RULES:
-1. Dynamic Parsing: Extract Required Skills, Preferred Skills, Responsibilities, and Tools directly from the JD.
-2. Strict Context: Compare the resume ONLY against the extracted JD skills.
-   - Matched Skills: MUST be present in both JD and Resume.
-   - Missing Skills: MUST be present in JD but absent in Resume.
-   - NEVER introduce skills or tools not explicitly mentioned in the JD or logically derived from the JD domain. No cross-domain hallucinations (e.g., do not suggest Kafka for a Civil Engineering role).
-3. Role-Sensitivity:
-   - If the JD is for an Internship/Fresher: focus Impact on "Project Outcomes" and "Learning Impact", and Ownership on "initiative/contribution".
-   - If Experienced: focus Impact on "Business Impact" (ROI, revenue, efficiency), and Ownership on "leadership/autonomy".
-4. Intelligent Suggestions: Generate actionable suggestions purely based on JD gaps. E.g., if a JD tool is missing, suggest adding a project using that tool. Do not give generic suggestions.
+1. Skill Normalization (CRITICAL BUG FIX): Before matching, normalize all skills by converting to lowercase, removing punctuation, and standardizing formats (e.g., "STAAD.Pro" = "STAAD Pro", "MS Excel" = "Excel", "Auto-CAD" = "AutoCAD"). Treat normalized skills as identical.
+2. Dynamic Parsing & Evidence-Based Validation: Extract Required Skills, Preferred Skills, Responsibilities, and Tools directly from the JD. Search the ENTIRE resume (skills, projects, experience) before marking anything as missing. Do not rely only on the "Skills" section.
+3. Semantic Skill Matching & Synonym Mapping Layer: Evaluate conceptual similarity and synonyms.
+   - If similarity > 0.75 (e.g., "AutoCAD" ≈ "Revit", "Geotechnical Engineering concepts" ≈ "Geotechnical Engineering", "Programming" ≈ "Python"), mark it as MATCHED.
+4. Smart Missing Skills Detection: Only mark a skill as missing if it exists in the JD AND no direct OR semantic/normalized match is found anywhere in the resume. Remove false missing skills.
+5. Exact vs Semantic Confidence Fix: For every item in the `matched_keywords` list, append a confidence rating based on the match type:
+   - Append "(High)" for direct exact mentions (e.g., AutoCAD <-> AutoCAD).
+   - Append "(Medium)" for semantic/synonym equivalents (e.g., AutoCAD <-> Revit).
+6. Suggestion Precision Upgrade & Redundancy Removal:
+   - NEVER suggest "learning" or "adding" a skill if it is already present directly or semantically.
+   - If a skill exists, suggest "showing usage" (e.g., "Show how Python was used in projects or analysis").
+   - If a skill is truly missing, suggest a specific contextual addition (e.g., "If AutoCAD not used, highlight equivalent BIM tools like Revit").
+7. Internship-Safe Ownership Logic:
+   - For internships/student resumes, DO NOT expect or evaluate leadership/team management. Evaluate initiative and independent work instead. Replace "Missing: Leadership" with "Opportunity: Can further highlight initiative or leadership signals in projects".
+   - For Experienced roles, focus on Business Impact, ROI, and Leadership.
+8. Final Validation Rule: Before outputting, ensure there are no false missing skills, no duplicate/redundant suggestions, and confidence levels are consistent.
 
 Analyze across 4 dimensions:
 1. Exact Match: Direct keyword/requirement matches from the JD.
-2. Similarity Match: Semantic equivalency within the SAME domain (e.g., AWS Kinesis to Kafka if tech, or STAAD to SAP2000 if civil).
+2. Similarity Match: Semantic equivalency and synonym mapping within the SAME domain.
 3. Impact/Achievement: Scale of achievements adapted to role level.
 4. Ownership: Level of responsibility adapted to role level.
 
 For EACH dimension, provide:
 - A score (0-100)
 - A concise explanation
-- A list of actionable improvement suggestions
-- A list of matched keywords/skills (JD vs Resume)
-- A list of missing keywords/skills (JD vs Resume)
+- A list of highly specific, context-aware improvement suggestions (NO redundant suggestions)
+- A list of matched keywords/skills (MUST include confidence score, e.g., "Python (High)", "BIM tools (Medium)")
+- A list of truly missing keywords/skills
 
 Provide an overall score (0-100) and classify them into a Tier:
 - "A" (Strong match: 85-100)
