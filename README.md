@@ -87,7 +87,7 @@ If you are running this in Antigravity or any hosted Python environment:
 pip install -r requirements.txt
 ```
 
-4. Run the app:
+3. Run the app:
 
 ```bash
 python -m streamlit run src/app.py
@@ -330,6 +330,32 @@ Neither variable is required to run the app in **Mock LLM** mode or to run the t
 ├── requirements.txt
 └── README.md
 ```
+
+---
+
+## AI Tools
+
+Using AI effectively is a real skill — here's how it was used in this project.
+
+### What AI was used for
+
+- **Boilerplate generation** — the Pydantic model definitions (`EvaluationResult`, `ScoreDimension`, `SectionScore`, `RequirementMatch`) and the initial Streamlit UI layout were scaffolded with AI assistance, then refined manually
+- **Prompt engineering** — the structured JSON prompt inside the OpenAI and Groq clients (the schema description, dimension definitions, and output format instructions) was drafted collaboratively with an AI and iterated on until the LLM returned consistently valid JSON
+- **Architecture brainstorming** — the four-engine design (Parsing → Scoring → Verification → Question Generator) and the scalability strategy in `ARCHITECTURE.md` (SQS queues, Redis deduplication, horizontal pod scaling) were explored through back-and-forth with an AI before being written up
+- **Test scaffolding** — the initial structure of `tests/test_engine.py` was generated with AI, covering the obvious happy-path and edge-case scenarios
+
+### What was reviewed and changed manually
+
+- **Tier classification thresholds** — the cutoffs (≥80 = Tier A, ≥60 = Tier B) were a product judgment call made manually after reviewing what the mock scores looked like in practice
+- **Scoring dimensions** — the choice of four dimensions (Exact Match, Similarity, Impact, Ownership) was a deliberate design decision, not an AI suggestion; alternatives like "Culture Fit" or "Communication" were considered and rejected as too subjective to score reliably
+- **Mock client logic** — the `is_python` / `is_kafka` keyword branching in `MockLLMClient` was simplified manually; the AI initially suggested a more elaborate mock that read the actual resume text, which was overkill for a deterministic test fixture
+- **LLM abstraction layer** — the `BaseLLMClient` interface and the decision to keep `EvaluationEngine` thin (no business logic, just orchestration) was a manual architectural call to ensure testability and provider flexibility
+
+### One example where we disagreed with the AI's output
+
+The AI initially suggested using **chained LLM calls** — one call to extract structured data from the resume, a second to score it against the JD. The reasoning was that separating parsing from evaluation would improve accuracy and allow each step to be tested independently.
+
+We disagreed and kept it as a **single prompt** for two reasons: first, for the scope of this project the resume and JD fit comfortably within a single context window, so the added latency and cost of two calls was not justified; second, the evaluation dimensions (especially Similarity Match and Ownership) require reading the resume and JD together — splitting them into separate calls would lose the cross-document context that makes the scoring meaningful. The single-prompt approach also made the mock client simpler and the test suite easier to reason about.
 
 ---
 
