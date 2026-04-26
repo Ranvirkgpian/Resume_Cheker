@@ -22,10 +22,10 @@ class MockLLMClient(BaseLLMClient):
                     score=overall, 
                     explanation="Matched several core requirements from the JD.",
                     suggestions=[
-                        "Add specific version numbers or standards for mentioned skills",
+                        "Add specific version numbers or standards for Core Skill 1 to improve depth",
                         "Include certification names relevant to the JD"
                     ],
-                    matched_keywords=["Core Skill 1", "Core Skill 2"],
+                    matched_keywords=["Core Skill 1 (High)", "Core Skill 2 (High)"],
                     missing_keywords=["Missing Tool A", "Missing Framework B"]
                 ),
                 similarity_match=ScoreDimension(
@@ -35,7 +35,7 @@ class MockLLMClient(BaseLLMClient):
                         "Highlight transferable skills more explicitly",
                         "Use terminology that matches the job description exactly"
                     ],
-                    matched_keywords=["Related Domain Concept"],
+                    matched_keywords=["Related Domain Concept (Medium)"],
                     missing_keywords=["Specific Required Concept"]
                 ),
                 impact_achievement=ScoreDimension(
