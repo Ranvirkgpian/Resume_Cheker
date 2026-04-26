@@ -25,17 +25,10 @@ st.markdown("Evaluate candidate resumes against Job Descriptions using AI-powere
 # Sidebar settings
 with st.sidebar:
     st.header("Settings")
-    llm_mode = st.radio("Select LLM Mode", ["Mock LLM (Fast, Free)", "Groq (Llama 3.3 70B)", "OpenAI (GPT-4o)"])
+    llm_mode = st.radio("Select LLM Mode", ["Mock LLM (Fast, Free)", "Groq (Llama 3.3 70B)"])
     
     api_key = ""
-    if llm_mode == "OpenAI (GPT-4o)":
-        api_key = os.environ.get("OPENAI_API_KEY", "")
-        if not api_key:
-            api_key = st.text_input("OpenAI API Key", type="password")
-            if not api_key:
-                st.warning("Please provide an OpenAI API key or set OPENAI_API_KEY env var.")
-                st.stop()
-    elif llm_mode == "Groq (Llama 3.3 70B)":
+    if llm_mode == "Groq (Llama 3.3 70B)":
         api_key = os.environ.get("GROQ_API_KEY", "")
         if not api_key:
             api_key = st.text_input("Groq API Key", type="password")
@@ -78,10 +71,8 @@ if st.button("Evaluate Candidate", type="primary", use_container_width=True):
             # Setup client
             if llm_mode == "Mock LLM (Fast, Free)":
                 client = MockLLMClient()
-            elif llm_mode == "Groq (Llama 3.3 70B)":
-                client = GroqClient(api_key=api_key)
             else:
-                client = OpenAIClient(api_key=api_key)
+                client = GroqClient(api_key=api_key)
             
             engine = EvaluationEngine(client)
             
