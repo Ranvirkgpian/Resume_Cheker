@@ -22,7 +22,7 @@ class MockLLMClient(BaseLLMClient):
                     score=overall, 
                     explanation="Matched several core requirements from the JD.",
                     suggestions=[
-                        "Add specific version numbers or standards for Core Skill 1 to improve depth",
+                        "Show how Core Skill 1 was used in projects or analysis",
                         "Include certification names relevant to the JD"
                     ],
                     matched_keywords=["Core Skill 1 (High)", "Core Skill 2 (High)"],
@@ -53,7 +53,7 @@ class MockLLMClient(BaseLLMClient):
                     score=75,
                     explanation="Demonstrated good ownership but limited large-scale autonomy.",
                     suggestions=[
-                        "Emphasize end-to-end project ownership",
+                        "Opportunity: Can further highlight initiative or leadership signals in projects",
                         "Mention decisions you made independently and their outcomes"
                     ],
                     matched_keywords=["Task owner", "Coordinator"],
