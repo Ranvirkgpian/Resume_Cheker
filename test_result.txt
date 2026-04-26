@@ -1,0 +1,16 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\Ranvir Kumar\AppData\Local\Python\pythoncore-3.14-64\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Users\Ranvir Kumar\Downloads\jules_session_6868278428795754409_evaluation-engine-6868278428795754409
+configfile: pytest.ini
+plugins: anyio-4.13.0
+collecting ... collected 6 items
+
+tests/test_engine.py::test_evaluation_engine_with_mock PASSED            [ 16%]
+tests/test_engine.py::test_evaluation_engine_poor_fit PASSED             [ 33%]
+tests/test_engine.py::test_evaluation_has_suggestions PASSED             [ 50%]
+tests/test_engine.py::test_evaluation_has_keywords PASSED                [ 66%]
+tests/test_engine.py::test_evaluation_has_section_scores PASSED          [ 83%]
+tests/test_engine.py::test_evaluation_has_requirement_matches PASSED     [100%]
+
+============================== 6 passed in 0.11s ==============================
