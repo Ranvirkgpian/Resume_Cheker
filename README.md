@@ -80,7 +80,8 @@ Then press **F5** to launch.
 
 If you are running this in Antigravity or any hosted Python environment:
 
-1. ```bash
+1. First Step:
+   ```bash
 cd "File Path Name"
 ```
 2. In the shell panel, install dependencies:
